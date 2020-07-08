@@ -1,6 +1,6 @@
 declare upper;
-input ST_Coeff = 3; # Between 1 - 100
-input ST_Period = 7; #Between 1 - 100
+input ST_Coeff = 1; # Between 1 - 100
+input ST_Period = 15; #Between 1 - 100
 
 ###############
 # SuperTrend1 #
@@ -8,7 +8,7 @@ input ST_Period = 7; #Between 1 - 100
 input aggrPd1 = AggregationPeriod.FOUR_HOURS;
 
 # Heikin Ashi Stuff
-# Working off of HA open, high, low, close 
+# Working off of HA open, high, low, close
 def hacl1 = ( open(period = aggrPd1) + high(period = aggrPd1) + low(period = aggrPd1) + close(period = aggrPd1) ) / 4;
 def haop1 = CompoundValue(1, (haop1[1] + hacl1[1]) / 2, (open(period = aggrPd1)[1] + close(period = aggrPd1)[1]) / 2);
 def hahi1 = Max( open(period = aggrPd1), Max( hacl1, haop1 ) );
@@ -38,7 +38,7 @@ SuperTrend1.SetLineWeight( 2 );
 input aggrPd2 = AggregationPeriod.DAY;
 
 # Heikin Ashi Stuff
-# Working off of HA open, high, low, close 
+# Working off of HA open, high, low, close
 def hacl2 = ( open(period = aggrPd2) + high(period = aggrPd2) + low(period = aggrPd2) + close(period = aggrPd2) ) / 4;
 def haop2 = CompoundValue(1, (haop2[1] + hacl2[1]) / 2, (open(period = aggrPd2)[1] + close(period = aggrPd2)[1]) / 2);
 def hahi2 = Max( open(period = aggrPd2), Max( hacl2, haop2 ) );
@@ -70,14 +70,21 @@ SuperTrend2.SetLineWeight( 2 );
 # Strategy Calculations
 def entryPrice = open(period = aggrPd1)[-1];
 def exitPrice = open(period = aggrPd1)[-1];
-def tSize = 5000 / entryPrice;
+def tSize = Round(Average(20000 / entryPrice));
 
 def sma200 = MovingAverage(AverageType.SIMPLE, close(period = aggrPd1), 200);
 def bullMarket = open(period = aggrPd1)[-1] > sma200;
 def bearMarket = open(period = aggrPd1)[-1] < sma200;
 
+def bullmk = ( close(period = aggrPd1)[-1] > SuperTrend1[-1] and close(period = aggrPd1)[0] < SuperTrend1[0] ) ;
+def bearmk = ( close(period = aggrPd1)[-1] < SuperTrend1[-1] and close(period = aggrPd1)[0] > SuperTrend1[0] );
+
 # Bull Market BUY
-AddOrder(OrderType.BUY_TO_OPEN, close(period = aggrPd1)[-1] > SuperTrend1[-1] and close(period = aggrPd1)[0] < SuperTrend1[0], price = entryPrice, tradeSize = tSize, tickcolor = GetColor(0), arrowcolor = GetColor(1));
+AddOrder(OrderType.BUY_TO_OPEN, bullmk, price = entryPrice, tradeSize = tSize, tickcolor = GetColor(0), arrowcolor = GetColor(1));
+# Buy Alert
+Alert(bullmk, Sound.Chimes, Alert.BAR);
+
 # Bull Market SELL
-AddOrder(OrderType.SELL_TO_CLOSE, close(period = aggrPd1)[-1] < SuperTrend1[-1]
-    and close(period = aggrPd1)[0] > SuperTrend1[0], price = exitPrice, tradeSize = tSize, tickcolor = GetColor(1), arrowcolor = GetColor(0));
+AddOrder(OrderType.SELL_TO_CLOSE, bearmk, price = exitPrice, tradeSize = tSize, tickcolor = GetColor(1), arrowcolor = GetColor(0));
+#Sell Alert
+Alert(bearmk, Sound.Chimes, Alert.BAR);
