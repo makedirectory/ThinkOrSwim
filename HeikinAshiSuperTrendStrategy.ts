@@ -1,6 +1,8 @@
 declare upper;
 input ST_Coeff = 1; # Between 1 - 100
-input ST_Period = 15; #Between 1 - 100
+input ST_Period = 15; # Between 1 - 100
+input tradeFunds = 10000; # Int or Percent of Account Value
+input calulatedMovingAverage = 200; # Moving Average used in Strategy
 
 ###############
 # SuperTrend1 #
@@ -70,11 +72,11 @@ SuperTrend2.SetLineWeight( 2 );
 # Strategy Calculations
 def entryPrice = open(period = aggrPd1)[-1];
 def exitPrice = open(period = aggrPd1)[-1];
-def tSize = Round(Average(20000 / entryPrice));
+def tSize = Round(Average(tradeFunds / entryPrice));
 
-def sma200 = MovingAverage(AverageType.SIMPLE, close(period = aggrPd1), 200);
-def bullMarket = open(period = aggrPd1)[-1] > sma200;
-def bearMarket = open(period = aggrPd1)[-1] < sma200;
+def sma = MovingAverage(AverageType.SIMPLE, close(period = aggrPd1), calulatedMovingAverage);
+def bullMarket = open(period = aggrPd1)[-1] > sma;
+def bearMarket = open(period = aggrPd1)[-1] < sma;
 
 def bullmk = ( close(period = aggrPd1)[-1] > SuperTrend1[-1] and close(period = aggrPd1)[0] < SuperTrend1[0] ) ;
 def bearmk = ( close(period = aggrPd1)[-1] < SuperTrend1[-1] and close(period = aggrPd1)[0] > SuperTrend1[0] );
