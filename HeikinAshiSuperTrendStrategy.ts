@@ -1,20 +1,19 @@
 declare upper;
 input ST_Coeff = 1; # Between 1 - 100
 input ST_Period = 15; # Between 1 - 100
-input tradeFunds = 10000; # Int or Percent of Account Value
-input calulatedMovingAverage = 200; # Days in Moving Average
+input tradeFunds = 10000; # Amount to trade
 input aggrPd = AggregationPeriod.FOUR_HOURS;
 
 ###############
 # SuperTrend #
 ###############
 
-# Heikin Ashi Stuff
-# Working off of HA open, high, low, close
+# Heikin Ashi
 def hacl = ( open(period = aggrPd) + high(period = aggrPd) + low(period = aggrPd) + close(period = aggrPd) ) / 4;
 def haop = CompoundValue(1, (haop[1] + hacl[1]) / 2, (open(period = aggrPd)[1] + close(period = aggrPd)[1]) / 2);
 def hahi = Max( open(period = aggrPd), Max( hacl, haop ) );
 def halo = Min( low(period = aggrPd), Min( hacl, haop ) );
+
 def hahl2 = (hahi + halo) / 2;
 
 def iATR = MovingAverage(AverageType.WILDERS, TrueRange(hahi, hacl, halo), ST_Period);
